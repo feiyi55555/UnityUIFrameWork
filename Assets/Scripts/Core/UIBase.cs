@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,19 +13,20 @@ public class UIBase : MonoBehaviour {
         {
             Button btn = btns[i];
             EventTriggerListener listener = EventTriggerListener.Get(btn.gameObject);
-            listener.onClick = OnBtnClick;
+            listener.onClick = BtnClick;
         }
         OnAwake();
+    }
+
+    private void BtnClick(GameObject go)
+    {
+        OnBtnClick(go);
     }
 
     private void Start ()
     {
         OnStart();
     }
-
-    private void Update () {
-		
-	}
 
     private void OnDestory()
     {

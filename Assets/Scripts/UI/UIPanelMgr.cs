@@ -1,6 +1,8 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 public class UIPanelMgr : Singleton<UIPanelMgr>
 {
@@ -12,7 +14,30 @@ public class UIPanelMgr : Singleton<UIPanelMgr>
         Panel_LogOn,
     }
 
+    public GameObject LoadAndInstantiate(PanelType panelType)
+    {
+        string path = GetPathByType(panelType);
+        GameObject panel = ResMgr.Instance.LoadAndInstantiate(path, ResMgr.ResType.UI) as GameObject;
+        panel.SetActive(false);
+
+        if (UISceneCanvas == null)
+        {
+            throw new Exception("挂件没找到！");
+        }
+        panel.transform.SetParent(UISceneCanvas.transform);
+        panel.transform.localPosition = Vector3.zero; // 如果不是localPosition，那么Z值会错乱
+        panel.transform.rotation = Quaternion.identity;
+        panel.transform.localScale = Vector3.one;
+        return panel;
+    }
+
     public GameObject Load(PanelType panelType)
+    {
+        string path = GetPathByType(panelType);
+        return ResMgr.Instance.Load(path, ResMgr.ResType.UI) as GameObject;
+    }
+
+    public string GetPathByType(PanelType panelType)
     {
         string path = "";
         switch (panelType)
@@ -27,6 +52,77 @@ public class UIPanelMgr : Singleton<UIPanelMgr>
             case PanelType.None:
                 break;
         }
-        return ResMgr.Instance.LoadAndInstantiate(path, ResMgr.ResType.UI) as GameObject;
+        return path;
     }
+
+
+
+    #region 页面跳转
+
+    //private UIBase currPanel;
+
+    private GameObject m_UISceneCanvas;
+
+    public GameObject UISceneCanvas
+    {
+        get
+        {
+            if (m_UISceneCanvas == null)
+            {
+                m_UISceneCanvas = GameObject.FindGameObjectWithTag("Canvas Container");
+            }
+            return m_UISceneCanvas;
+        }
+        set { m_UISceneCanvas = value; }
+    }
+
+    private Stack<GameObject> stackUiBases = new Stack<GameObject>();
+
+    public delegate void OnEnterPanel(params Object[] obj);
+    public delegate void OnExitPanel(params Object[] obj);
+
+    public void EnterPanel(PanelType panelType, OnEnterPanel onEnterPanel = null)
+    {
+        if (stackUiBases.Count > 1)
+        {
+            GameObject goOld = stackUiBases.Peek();
+            goOld.SetActive(false);
+        }
+        GameObject obj = this.LoadAndInstantiate(panelType);
+        obj.SetActive(true);
+        stackUiBases.Push(obj);
+        if (onEnterPanel != null)
+        {
+            onEnterPanel(obj);
+        }
+    }
+
+    public void ExitPanel(OnExitPanel onExitPanel = null)
+    {
+        if (stackUiBases.Count > 1)
+        {
+            GameObject go = stackUiBases.Pop();
+            go.SetActive(false);
+            if (onExitPanel != null)
+            {
+                onExitPanel(go);
+            }
+            if (stackUiBases.Peek() != null)
+            {
+                GameObject goNew = stackUiBases.Peek();
+                goNew.SetActive(true);
+            }
+        }
+        else
+        {
+            throw new Exception("UIPanel IS NULL, WRONG EXIT!");
+        }
+    }
+
+    public void ChangePanel(PanelType panelType, OnExitPanel onExitPanel = null, OnEnterPanel onEnterPanel = null)
+    {
+        ExitPanel(onExitPanel);
+        EnterPanel(panelType, onEnterPanel);
+    }
+#endregion
 }
