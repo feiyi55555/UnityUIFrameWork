@@ -247,6 +247,7 @@ GameObject:
   - component: {fileID: 224448724433473864}
   - component: {fileID: 222486668889988320}
   - component: {fileID: 114218224549258330}
+  - component: {fileID: 114822485997270642}
   m_Layer: 5
   m_Name: Panel_LogIn
   m_TagString: Untagged
@@ -906,6 +907,17 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: 
+--- !u!114 &114822485997270642
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1791238311799044}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d990948fdc0398c469bf8d794fe067e2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &114904216055396166
 MonoBehaviour:
   m_ObjectHideFlags: 1
