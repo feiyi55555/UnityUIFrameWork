@@ -33,6 +33,12 @@ public class UIBase : MonoBehaviour {
         BeforeOnDestory();
     }
 
+    public void Close()
+    {
+        gameObject.SetActive(false);
+        GameObject.Destroy(gameObject);
+    }
+
     protected virtual void OnStart() { }
     protected virtual void OnAwake() { }
     protected virtual void BeforeOnDestory() { }

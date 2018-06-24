@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
+using UnityEngine.Events;
 using Object = UnityEngine.Object;
 
 public class UIPanelMgr : Singleton<UIPanelMgr>
@@ -83,17 +85,25 @@ public class UIPanelMgr : Singleton<UIPanelMgr>
 
     public void EnterPanel(PanelType panelType, OnEnterPanel onEnterPanel = null)
     {
-        if (stackUiBases.Count > 1)
+        if (stackUiBases.Count > 0)
         {
             GameObject goOld = stackUiBases.Peek();
             goOld.SetActive(false);
         }
-        GameObject obj = this.LoadAndInstantiate(panelType);
-        obj.SetActive(true);
-        stackUiBases.Push(obj);
+        GameObject go = this.LoadAndInstantiate(panelType);
+        go.SetActive(true);
+        stackUiBases.Push(go);
         if (onEnterPanel != null)
         {
-            onEnterPanel(obj);
+            onEnterPanel(go);
+        }
+        else
+        {
+            DOTweenAnimation doTween = go.GetComponent<DOTweenAnimation>();
+            if (doTween != null)
+            {
+                doTween.DOPlayForward();
+            }
         }
     }
 
@@ -102,11 +112,27 @@ public class UIPanelMgr : Singleton<UIPanelMgr>
         if (stackUiBases.Count > 1)
         {
             GameObject go = stackUiBases.Pop();
-            go.SetActive(false);
+            //go.SetActive(false);
             if (onExitPanel != null)
             {
                 onExitPanel(go);
             }
+            else
+            {
+                DOTweenAnimation doTween = go.GetComponent<DOTweenAnimation>();
+                if (doTween != null)
+                {
+                    UnityEvent unityEvent = new UnityEvent();
+                    unityEvent.AddListener(() =>
+                    {
+                        go.SetActive(false);
+                        Object.Destroy(go);
+                    });
+                    doTween.onComplete = unityEvent;
+                    doTween.DOPlayBackwards();
+                }
+            }
+            //GameObject.Destroy(go);
             if (stackUiBases.Peek() != null)
             {
                 GameObject goNew = stackUiBases.Peek();
@@ -117,6 +143,11 @@ public class UIPanelMgr : Singleton<UIPanelMgr>
         {
             throw new Exception("UIPanel IS NULL, WRONG EXIT!");
         }
+    }
+
+    public void Test()
+    {
+        Debug.Log("666啊！");
     }
 
     public void ChangePanel(PanelType panelType, OnExitPanel onExitPanel = null, OnEnterPanel onEnterPanel = null)
